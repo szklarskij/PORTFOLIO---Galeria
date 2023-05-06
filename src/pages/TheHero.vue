@@ -134,7 +134,7 @@
 </template>
 <script>
 import { onMounted, inject, ref, watch } from "vue";
-// import { gsap } from "gsap";
+import { randomIntFromInterval } from "../helpers.js";
 
 export default {
   setup() {
@@ -154,10 +154,6 @@ export default {
       }
     });
     const heroAnimation = () => {
-      function randomIntFromInterval(min, max) {
-        return Math.random() * (max - min + 1) + min;
-      }
-
       const heightArray = ["1", "2", "3", "4", "5", "6"];
       const rectangles = document.querySelectorAll(".rectangle");
 
@@ -171,12 +167,6 @@ export default {
           if (e === val) heightArray.splice(index, 1);
           rect.classList.add(`heigh-4`);
         });
-
-        // gsap.to(rect, {
-        //   opacity: 1,
-        //   duration: randomIntFromInterval(1, 1.5),
-        //   ease: "power3.out(1.7)",
-        // });
       });
     };
     return { mobileView, load };

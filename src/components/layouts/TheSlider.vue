@@ -131,25 +131,12 @@ export default {
       offset();
     });
 
-    // const arrowClick = ref(props.arrowClicked);
-
-    // watch(arrowClick, () => {});
 
     const fetchNextSlide = (id) => {
       context.emit("fetchNextSlide", id);
     };
     const currentSlide = ref(0);
-    // const currentSlide = computed(() => {
-    //   if (!carousel.value || thumbArray.value.length === 0) return 0;
-    //   let slideIndex = 0;
-    //   thumbArray.value.forEach((thumb, index) => {
-    //     if (thumb.id === currentId.value.id) {
-    //       slideIndex = index;
-    //     }
-    //   });
-    //   return slideIndex;
-    // });
-
+ 
     const slideTo = (val) => {
       currentSlide.value = val;
     };
@@ -181,19 +168,10 @@ export default {
 }
 
 .slider-wrap {
-  /* display: flex; */
-  /* position: absolute; */
-  /* left: 50%; */
-  /* transform: translateX(-50%); */
-  /* margin-left: var(--slider-margin); */
-  /* margin: 0 auto; */
   position: absolute;
   align-self: center;
-
   width: 50rem;
   transition: all 0.3s ease;
-  /* align-self: center; */
-  /* display: flex; */
 }
 @media (max-width: 992px) {
   .slider-wrap {
@@ -201,18 +179,17 @@ export default {
     position: unset;
     transform: none;
 
-    /* align-self: center; */
   }
 }
 @media (max-width: 768px) {
   .slider-wrap {
     width: 26rem;
-    /* align-self: center; */
+
   }
   @media (max-width: 576px) {
     .slider-wrap {
       width: 15rem;
-      /* align-self: center; */
+
     }
   }
 }

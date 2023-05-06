@@ -35,4 +35,7 @@ export default {
   getScrollOnReturn(state) {
     return state.scrollOnReturn;
   },
+  getZoomState(state) {
+    return state.zoomState;
+  },
 };

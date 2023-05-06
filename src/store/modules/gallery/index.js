@@ -17,6 +17,7 @@ export default {
       thumbnailParams: null,
       thumbnailArray: [],
       scrollOnReturn: false,
+      zoomState: 0
     };
   },
   actions,

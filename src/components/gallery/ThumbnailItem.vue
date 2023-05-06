@@ -14,14 +14,14 @@
     <div
       v-if="isAdminLogged && isSorted === 'Id' && !isDummyImg"
       class="left-arrow-container"
-      @click="swapLeft"
+      @click="swap('left')"
     >
       <i class="bi bi-arrow-left text-white fs-3 bg-success"></i>
     </div>
     <div
       v-if="isAdminLogged && isSorted === 'Id' && !isDummyImg"
       class="right-arrow-container"
-      @click="swapRight"
+      @click="swap('right')"
     >
       <i class="bi bi-arrow-right text-white fs-3 bg-success"></i>
     </div>
@@ -46,7 +46,7 @@ export default {
     "itemQuery",
     "allImagesReadytoShow",
   ],
-  emits: ["animationFinished", "swapRight", "swapLeft", "imgReady"],
+  emits: ["animationFinished", "swap", "imgReady"],
 
   setup(props, context) {
     //////////////////////////////////////////////////////////////////////////////////////////////// Setup
@@ -130,20 +130,17 @@ export default {
       if (!img) return;
       img.onload = function () {};
     });
-    const swapLeft = function () {
-      context.emit("swapLeft", props.id);
+    const swap = function (direction) {
+      context.emit("swap", props.id, direction);
     };
-    const swapRight = function () {
-      context.emit("swapRight", props.id);
-    };
+
     return {
       smallImg,
       imgReady,
       isDummyImg,
       imgDom,
       isAdminLogged,
-      swapLeft,
-      swapRight,
+      swap,
       isSorted,
       goToImage,
       thumbUrl,

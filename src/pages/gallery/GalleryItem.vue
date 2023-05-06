@@ -268,7 +268,15 @@
 import { useStore } from "vuex";
 import EditPanel from "../../components/gallery/EditPanel.vue";
 import TheSlider from "../../components/layouts/TheSlider.vue";
-import { ref, computed, watch, onMounted, inject, provide } from "vue";
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  inject,
+  provide,
+  onBeforeUnmount,
+} from "vue";
 import { useRoute } from "vue-router";
 import { API } from "../../config.js";
 import { gsap } from "gsap";
@@ -328,7 +336,7 @@ export default {
     });
 
     const zoomed = ref(false);
-
+    const sliderWasOpened = ref(false);
     //////////////////////////////////////////////////////////////////////////////////////////////// Fetch
     const fetchImage = async (id) => {
       document.querySelector("body").scrollTo({ top: 0, behavior: "smooth" });
@@ -397,6 +405,7 @@ export default {
     };
     const showBubbles = () => {
       const bubbles = document.getElementsByClassName("cloud");
+      let limitDoubleSlide = false;
       [...bubbles].forEach((el) => {
         gsap.fromTo(
           el,
@@ -411,7 +420,16 @@ export default {
             y: 0,
           }
         );
-        gsap.to(el, { opacity: 0, delay: 3 });
+        gsap.to(el, {
+          opacity: 0,
+          delay: 3,
+          onComplete: () => {
+            if (!limitDoubleSlide) {
+              limitDoubleSlide = true;
+              if (!sliderOpen.value && !zoomed.value) slide();
+            }
+          },
+        });
       });
       store.dispatch("gallery/hideCloud", "gallery-item");
     };
@@ -451,6 +469,7 @@ export default {
 
     const onZooming = function () {
       const el = document.querySelector(".vh--holder");
+      store.dispatch("gallery/setZoomState", 1);
 
       el.style.cursor = "zoom-out";
       const wrapper = document.querySelector(".img-wrapper");
@@ -468,6 +487,8 @@ export default {
       }
     };
     const resetZoom = function () {
+      store.dispatch("gallery/setZoomState", 0);
+
       const el = document.querySelector(".vh--holder");
       el.style.cursor = "zoom-in";
       const wrapper = document.querySelector(".img-wrapper");
@@ -483,6 +504,25 @@ export default {
         arrow.style.position = "absolute";
       }
     };
+    const zoomState = computed(() => {
+      return store.getters["gallery/getZoomState"];
+    });
+    watch(zoomState, () => {
+      if (zoomState.value === 2) {
+        zoomed.value = false;
+        resetZoom();
+        store.dispatch("gallery/setZoomState", 0);
+        (fullWidth.value = false),
+          hideNav(false),
+          sliderWasOpened.value
+            ? (slide(), (sliderWasOpened.value = false))
+            : "";
+      }
+    });
+
+    onBeforeUnmount(() => {
+      store.dispatch("gallery/setZoomState", 0);
+    });
 
     //////////////////////////////////////////////////////////////////////////////////////////////// fetch thumbs
     // const redirectToMain = () => {
@@ -522,12 +562,6 @@ export default {
       if (id === currentImg.value.id) return;
       makeInvisible();
       resetBlur();
-      // const els = Array.from(
-      //   document.getElementsByClassName("opacity-animation")
-      // );
-      // els.forEach((el) => {
-      //   el.style.opacity = 0;
-      // });
 
       loadStage.value = 0;
 
@@ -580,17 +614,15 @@ export default {
 
     const sliderOpen = ref(false);
     const slide = () => {
+      const img = document.querySelector(".mainimg");
+      const main = document.querySelector(".main-flex");
       if (sliderOpen.value === false) {
-        const img = document.querySelector(".mainimg");
         img.classList.add("scale-down");
-        const main = document.querySelector(".main-flex");
         main.classList.add("main-basis");
 
         sliderOpen.value = true;
       } else {
-        const img = document.querySelector(".mainimg");
         img.classList.remove("scale-down");
-        const main = document.querySelector(".main-flex");
         main.classList.remove("main-basis");
 
         sliderOpen.value = false;
@@ -700,6 +732,7 @@ export default {
       isImgReadyToShow,
       loadStage,
       handleThumbnail,
+      sliderWasOpened,
     };
   },
 };

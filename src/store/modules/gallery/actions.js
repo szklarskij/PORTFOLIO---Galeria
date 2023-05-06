@@ -230,4 +230,7 @@ export default {
   setScrollOnReturn(context, payload) {
     context.commit("setScrollOnReturn", payload);
   },
+  setZoomState(context, payload){
+    context.commit("setZoomState", payload)
+  }
 };

@@ -38,10 +38,9 @@
                   :id="'item' + galleryPost.id"
                   :sortBy="fetchParams.sortBy"
                   class="d-flex"
-                  @animationFinished="showLoadMoreBtn"
+                  @animationFinished="btnOpacity = 1"
                   @imgReady="imgReady"
-                  @swapRight="swapRight"
-                  @swapLeft="swapLeft"
+                  @swap="swap"
                   :itemQuery="galleryItemQuery"
                   :allImagesReadytoShow="allImagesReadytoShow"
                 ></thumbnail-item>
@@ -71,6 +70,13 @@ import SideBar from "../../components/layouts/TheSidebar.vue";
 import ThumbnailItem from "../../components/gallery/ThumbnailItem.vue";
 import { useStore } from "vuex";
 import { useRouter, useRoute } from "vue-router";
+import {
+  getWidth,
+  getCurrentId,
+  getNextElementId,
+  calculateColumns,
+} from "./mainGalleryUtils.js";
+import { scrollTo, getCoords } from "../../helpers.js";
 
 import {
   reactive,
@@ -100,9 +106,6 @@ export default {
     //////////////////////////////////////////////////////////////////////////////////////////////// btn anim
 
     const btnOpacity = ref(0);
-    const showLoadMoreBtn = function () {
-      btnOpacity.value = 1;
-    };
 
     //////////////////////////////////////////////////////////////////////////////////////////////// Fetch and show
     const allImagesReadytoShow = ref(0);
@@ -171,7 +174,7 @@ export default {
       }
 
       fetchGallery();
-      scroll(0);
+      scrollTo(0);
     };
     const preventDoubleFetch = ref(false);
     const fetchGallery = async function () {
@@ -206,22 +209,9 @@ export default {
 
     const loadMore = async function () {
       fetchParams.pageNumber++;
-      scroll(getCoords(document.querySelector("#loadmore")));
+      scrollTo(getCoords(document.querySelector("#loadmore")));
 
       await fetchGallery();
-      function getCoords(elem) {
-        var box = elem.getBoundingClientRect();
-        var body = document.body;
-        var docEl = document.documentElement;
-        var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
-        var clientTop = docEl.clientTop || body.clientTop || 0;
-        var top = box.top + scrollTop - clientTop;
-        const navProperty = getComputedStyle(
-          document.documentElement
-        ).getPropertyValue("--nav-height");
-        const navHeight = +navProperty.split("p")[0];
-        return Math.round(top - navHeight);
-      }
     };
 
     const refreshGallery = function () {
@@ -239,89 +229,48 @@ export default {
       }
     };
 
-    const scroll = async function (y) {
-      setTimeout(() => {
-        document.querySelector("body").scrollTo({ top: y, behavior: "smooth" });
-      }, 100);
-    };
-
     //////////////////////////////////////////////////////////////////////////////////////////////// Watch window
 
-    const getWidth = function () {
-      windowWidth.value = document.documentElement.clientWidth;
-    };
     const windowWidth = ref(window.innerWidth);
-    window.addEventListener("resize", getWidth);
+    window.addEventListener("resize", () => {
+      windowWidth.value = getWidth();
+    });
+    const limitResponse = ref(false);
     watch(windowWidth, () => {
-      setGalleryCols("fetch");
-      // fetchGallery();
+      if (!limitResponse.value) {
+        limitResponse.value = true;
+
+        setTimeout(() => {
+          setGalleryCols("fetch");
+          limitResponse.value = false;
+        }, 400);
+      }
     });
     const setGalleryCols = (f) => {
-      if (windowWidth.value < 576 && gallaryColNum.value !== 2) {
-        gallaryColNum.value = 2;
+      const checkIfColNumberChanged = gallaryColNum.value;
+      gallaryColNum.value = calculateColumns(
+        windowWidth.value,
+        gallaryColNum.value
+      );
+
+      if (checkIfColNumberChanged !== gallaryColNum.value) {
         fetchParams.pageNumber = 1;
         rowArray.value = [];
-        if (f === "fetch") fetchGallery();
-      } else if (
-        windowWidth.value < 992 &&
-        windowWidth.value >= 576 &&
-        gallaryColNum.value !== 4
-      ) {
-        gallaryColNum.value = 4;
-        fetchParams.pageNumber = 1;
-        rowArray.value = [];
-        if (f === "fetch") fetchGallery();
-      } else if (windowWidth.value >= 992 && gallaryColNum.value !== 5) {
-        gallaryColNum.value = 5;
-        fetchParams.pageNumber = 1;
-        rowArray.value = [];
-        if (f === "fetch") fetchGallery();
-      } else if (!gallaryColNum.value) {
-        gallaryColNum.value = 5;
         if (f === "fetch") fetchGallery();
       }
     };
 
     //////////////////////////////////////////////////////////////////////////////////////////////// Gallery swap
 
-    const swapRight = (id) => {
-      const currId = +id.substring(id.indexOf("item") + 4);
+    const swap = (id, direction) => {
+      const currId = getCurrentId(id);
 
-      let nextElId;
+      const nextElId = getNextElementId(rowArray.value, currId, direction);
 
-      rowArray.value.forEach((row, rowIndex) => {
-        row.forEach((item, index) => {
-          if (item.id == currId) {
-            if (row[index + 1]) {
-              nextElId = row[index + 1].id;
-            } else if (rowArray.value[rowIndex + 1]) {
-              nextElId = rowArray.value[rowIndex + 1][0].id;
-            }
-          }
-        });
-      });
       if (!nextElId) return;
       swapGallery(currId, nextElId);
     };
-    const swapLeft = (id) => {
-      const currId = +id.substring(id.indexOf("item") + 4);
 
-      let nextElId;
-
-      rowArray.value.forEach((row, rowIndex) => {
-        row.forEach((item, index) => {
-          if (item.id == currId) {
-            if (row[index - 1]) {
-              nextElId = row[index - 1].id;
-            } else if (rowIndex > 0) {
-              nextElId = rowArray.value[rowIndex - 1][row.length - 1].id;
-            }
-          }
-        });
-      });
-      if (!nextElId) return;
-      swapGallery(currId, nextElId);
-    };
     const swapGallery = async (currId, idToSwap) => {
       try {
         await store.dispatch("gallery/swapGallery", `${currId}/${idToSwap}`);
@@ -333,6 +282,7 @@ export default {
       rowArray.value = [];
       fetchGallery();
     };
+
     //////////////////////////////////////////////////////////////////////////////////////////////// Init
     const firstMount = ref(true);
     const scrollPosition = ref(null);
@@ -346,10 +296,10 @@ export default {
       if (holdUrl.value) router.replace(holdUrl.value);
       if (!firstMount.value && !store.getters["gallery/getScrollOnReturn"]) {
         setGalleryCols();
-        scroll(scrollPosition.value);
+        scrollTo(scrollPosition.value);
         if (areParams.value) forceSlide.value++;
       } else {
-        scroll(0);
+        scrollTo(0);
         store.dispatch("gallery/setScrollOnReturn", false);
       }
 
@@ -429,11 +379,9 @@ export default {
       passParams,
       fetchGallery,
       countImages,
-      showLoadMoreBtn,
       btnOpacity,
       rowArrayComputed,
-      swapRight,
-      swapLeft,
+      swap,
       galleryItemQuery,
       imgReady,
       allImagesReadytoShow,

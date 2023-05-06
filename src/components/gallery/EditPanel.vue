@@ -262,15 +262,6 @@ export default {
         ) {
           validateOk = true;
         } else {
-          // if (
-          //   (ignoreFile &&
-          //     (inputFile.value.value.length !== 0 ||
-          //       inputFile2.value.value.length !== 0 ||
-          //       inputFile3.value.value.length !== 0) &&
-          //     inputFile.value.value.length === 0) ||
-          //   inputFile2.value.value.length === 0 ||
-          //   inputFile3.value.value.length === 0
-          // )
           {
             if (inputFile.value.value.length === 0) {
               validateOk = false;

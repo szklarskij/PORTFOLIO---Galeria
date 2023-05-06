@@ -42,7 +42,7 @@
             to="/galeria"
             :data-target="mobileView ? '#navbarNav' : ''"
             :data-toggle="mobileView ? 'collapse' : ''"
-            >Obrazy</router-link
+            >Galeria</router-link
           >
           <router-link
             class="nav-link"

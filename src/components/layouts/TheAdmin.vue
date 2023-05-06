@@ -14,16 +14,7 @@
         >
           Wgraj obraz
         </button>
-        <!-- <button
-          class="btn btn-outline-light text-nowrap"
-          @click="
-            (adminExpanded = true),
-              (showConfirmDelete = true),
-              (showChangePass = false)
-          "
-        >
-          Wyczyść galerię
-        </button> -->
+
         <button
           class="btn btn-outline-light text-nowrap text-nowrap"
           @click="
@@ -69,15 +60,6 @@
           >
             Potwierdź
           </button>
-          <!-- <button
-            form="changePass d-flex"
-            class="btn btn-danger text-nowrap"
-            v-if="showConfirmDelete"
-            @click="fetchDeleteAll"
-            :disabled="isLoading"
-          >
-            Potwierdź usunięcie
-          </button> -->
 
           <button
             class="btn btn-outline-light text-nowrap"

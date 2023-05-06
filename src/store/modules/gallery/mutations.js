@@ -37,4 +37,7 @@ export default {
   setScrollOnReturn(state, payload) {
     state.scrollOnReturn = payload;
   },
+  setZoomState(state, payload) {
+    state.zoomState = payload;
+  },
 };
