@@ -26,6 +26,7 @@ back-end:
 - Css & HTML
 - .NET 7 REST API
 - Azure webapp
+- Vitest
 
 ### Funkcjonalność strony:
 
@@ -66,6 +67,7 @@ back-end:
 - wykorzystanie innych funkcji Vue typu transition, teleport, keep-alive, props, injections
 - nadpisanie domyślego stylu frameworku Bootstrap
 - pełna responsywność z urządzeniami mobilnymi
+- testy jednostkowe
 
 #### Screenshots
 
@@ -110,6 +112,7 @@ back-end:
 ```
 npm run build
 npm run serve
+npm run test
 npm install
 ```
 
